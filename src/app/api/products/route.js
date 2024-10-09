@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { collection, query, where, orderBy, limit as firestoreLimit, startAfter, getDocs } from 'firebase/firestore';
+import { collection, query, where, limit as firestoreLimit, startAfter, getDocs } from 'firebase/firestore';
 import { db } from '../../../../lib/firebase';
 
 /**
- * Fetches products from Firestore based on search, sort, filter, and pagination parameters.
+ * Fetches products from Firestore based on search, filter, and pagination parameters.
  *
  * @param {Request} req - The incoming request.
  * @returns {Promise<NextResponse>} - The JSON response containing products and last document ID.
@@ -29,36 +29,27 @@ export async function GET(req) {
       q = query(q, where('category', '==', category));
     }
 
-    // Apply sorting
-    const sortBy = searchParams.get('sortBy') || 'id';
-    const order = searchParams.get('order') || 'asc';
-    if (sortBy === 'price') {
-      q = query(q, orderBy('price', order));
-    } else {
-      q = query(q, orderBy('id', order));
-    }
-
     // Pagination handling
     if (page > 1) {
-      // Fetch previous documents to find the last visible document
       const previousPageQuery = query(productRef, firestoreLimit((page - 1) * limit));
       const previousPageSnapshot = await getDocs(previousPageQuery);
       const lastVisibleDoc = previousPageSnapshot.docs[previousPageSnapshot.docs.length - 1];
-      q = query(q, startAfter(lastVisibleDoc)); // Start after the last document of the previous page
+      q = query(q, startAfter(lastVisibleDoc));
     }
 
     // Apply limit to the query
     q = query(q, firestoreLimit(limit));
 
+    // Fetch products
     const snapshot = await getDocs(q);
     const products = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-    // Update lastDoc to the last visible document for pagination
+    // Update lastDoc for pagination
     const lastDoc = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1].id : null;
 
     return NextResponse.json({ products, lastDoc });
   } catch (error) {
-    console.error(error); // Log the error for debugging
+    console.error('Error fetching products from Firestore:', error);
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
 }

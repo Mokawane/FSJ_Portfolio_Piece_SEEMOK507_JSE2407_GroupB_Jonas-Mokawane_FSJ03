@@ -34,12 +34,7 @@ export default function Products() {
 
   const limit = 20; // Number of products per page
 
-  /**
-   * Fetches products from the API route.
-   * Includes pagination, sorting, filtering, and search parameters.
-   *
-   * @returns {Promise<void>}
-   */
+  // Fetch products from the API
   const fetchProducts = async () => {
     setLoading(true);
     setError(null);
@@ -65,11 +60,7 @@ export default function Products() {
     }
   };
 
-  /**
-   * Updates the URL with current search, filter, and pagination options.
-   *
-   * @returns {void}
-   */
+  // Update URL with current parameters
   const updateUrl = () => {
     const currentParams = new URLSearchParams(window.location.search);
     currentParams.set('page', page);
@@ -85,6 +76,13 @@ export default function Products() {
     fetchProducts();
     updateUrl();
   }, [page, sortBy, order, selectedCategory, searchQuery]);
+
+  // Reset filters and show all products
+  const handleResetFilters = () => {
+    setSelectedCategory(null); // Reset category
+    setSearchQuery(''); // Clear search query
+    setPage(1); // Reset to first page
+  };
 
   /**
    * Handles cycling through product images by showing the previous image.
@@ -140,6 +138,7 @@ export default function Products() {
    */
   const handlePrevPage = () => setPage((prevPage) => (prevPage > 1 ? prevPage - 1 : 1));
 
+  // Loading and error states
   if (loading) return <div className="text-center text-lg font-semibold">Loading...</div>;
   if (error) return <div className="text-center text-lg font-semibold text-red-500">Error: {error}</div>;
 
@@ -159,6 +158,12 @@ export default function Products() {
           }
         }}
       />
+      <button
+        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded transition hover:bg-blue-600"
+        onClick={handleResetFilters}
+      >
+        Reset Filters
+      </button>
       <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
         {products.map((product, index) => (
           <li key={product.id} className="bg-white border p-2 shadow-lg rounded-lg transition-transform transform hover:scale-105">

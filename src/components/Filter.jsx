@@ -16,7 +16,7 @@ export default function Filter({ onCategoryChange }) {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch('https://next-ecommerce-api.vercel.app/categories');
+        const res = await fetch('/api/categories'); // Fetch categories from Firestore API
         const data = await res.json();
         groupCategories(data);
       } catch (error) {
@@ -48,7 +48,7 @@ export default function Filter({ onCategoryChange }) {
 
   const handleClearFilter = () => {
     setSelectedCategory(null);
-    onCategoryChange(null);
+    onCategoryChange(null); // Notify the parent component to reset the filter
   };
 
   const toggleDropdown = (groupName) => {
