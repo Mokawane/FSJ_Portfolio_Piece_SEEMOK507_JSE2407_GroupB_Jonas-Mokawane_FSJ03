@@ -31,7 +31,7 @@ export default function ProductDetail({ params }) {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const res = await fetch(`https://next-ecommerce-api.vercel.app/products/${id}`);
+        const res = await fetch(`/api/product/${id.padStart(3, '0')}`);
         const data = await res.json();
         setProduct(data);
         if (data.images.length > 0) {
