@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { db } from '../../../../lib/firebase';
+import { doc, addDoc, collection } from 'firebase/firestore';
 
 const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/400?text=Image+Not+Found';
 
 /**
- * Component that displays detailed information about a specific product, 
- * including images, title, price, category, stock, reviews, etc.
- *
- * @component
- * @param {Object} params - Object containing the product ID from the URL.
+ * ProductDetail component displays the product details and allows users to add, edit, and delete reviews.
+ * @param {Object} params - The route parameters.
+ * @returns {JSX.Element} The rendered ProductDetail component.
  */
 export default function ProductDetail({ params }) {
   const { id } = params;
@@ -20,14 +20,10 @@ export default function ProductDetail({ params }) {
   const [product, setProduct] = useState(null);
   const [currentImage, setCurrentImage] = useState('');
   const [images, setImages] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [newReview, setNewReview] = useState({ name: '', comment: '', rating: '' });
+  const [editingReviewId, setEditingReviewId] = useState(null);
 
-  /**
-   * Fetches the product details from the API when the component mounts or the `id` changes.
-   * Sets the product data, images, and the initial displayed image.
-   *
-   * @async
-   * @function fetchProduct
-   */
   useEffect(() => {
     async function fetchProduct() {
       try {
@@ -37,6 +33,10 @@ export default function ProductDetail({ params }) {
         if (data.images.length > 0) {
           setImages(data.images);
           setCurrentImage(data.images[0]);
+        }
+        // Fetch existing reviews
+        if (data.reviews) {
+          setReviews(data.reviews);
         }
       } catch (error) {
         console.error("Error fetching product data", error);
@@ -48,20 +48,10 @@ export default function ProductDetail({ params }) {
     }
   }, [id]);
 
-  /**
-   * Handles setting the fallback image when an error occurs while loading the product image.
-   *
-   * @param {Object} e - The event object.
-   */
   const handleError = (e) => {
     e.target.src = FALLBACK_IMAGE_URL;
   };
 
-  /**
-   * Handles navigating back to the product list with preserved filters.
-   *
-   * @function handleBack
-   */
   const handleBack = () => {
     const page = searchParams.get('page') || 1;
     const sortBy = searchParams.get('sortBy') || 'id';
@@ -79,6 +69,34 @@ export default function ProductDetail({ params }) {
 
     router.push(`/products?${queryParams.toString()}`);
   };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewReview((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddReview = async () => {
+    // Ensure that the review fields are filled in properly before submitting
+    if (!newReview.name || !newReview.comment || !newReview.rating) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    try {
+      const reviewData = { 
+        ...newReview, 
+        date: new Date().toLocaleString('en-GB', { timeZone: 'UTC', hour12: false }) // Format date as DD/MM/YYYY, HH:MM:SS
+      };
+      const reviewRef = await addDoc(collection(db, 'products', id, 'reviews'), reviewData);
+      setReviews((prev) => [...prev, { id: reviewRef.id, ...reviewData }]); // Add new review to local state
+      setNewReview({ name: '', comment: '', rating: '' }); // Reset form
+    } catch (error) {
+      console.error('Error adding review:', error);
+      alert("There was an error adding your review. Please try again.");
+    }
+  };
+
+  // Remaining methods and render logic...
 
   if (!product) {
     return <div>Loading...</div>;
@@ -152,21 +170,70 @@ export default function ProductDetail({ params }) {
             </div>
           )}
 
-          {product.reviews && product.reviews.length > 0 && (
+          {reviews.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold mb-2">Reviews:</h3>
               <ul>
-                {product.reviews.map((review, index) => (
-                  <li key={index} className="border-b border-gray-200 pb-2 mb-2">
+                {reviews.map((review) => (
+                  <li key={review.id} className="border-b border-gray-200 pb-2 mb-2">
                     <p className="font-semibold">{review.name}</p>
                     <p className="text-sm text-gray-500">{review.date}</p>
                     <p>{review.comment}</p>
                     <p className="font-semibold">Rating: {review.rating} / 5</p>
+                    <button onClick={() => handleDeleteReview(review.id)} className="text-red-500">
+                      Delete
+                    </button>
+                    <button onClick={() => { 
+                      setEditingReviewId(review.id); 
+                      setNewReview({ name: review.name, comment: review.comment, rating: review.rating }); 
+                    }} className="text-blue-500 ml-2">
+                      Edit
+                    </button>
                   </li>
                 ))}
               </ul>
             </div>
           )}
+
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold mb-2">Add a Review:</h3>
+            <div>
+              <input
+                type="text"
+                name="name"
+                placeholder="Your Name"
+                value={newReview.name}
+                onChange={handleInputChange}
+                className="border p-2 w-full mb-2"
+              />
+              <textarea
+                name="comment"
+                placeholder="Your Comment"
+                value={newReview.comment}
+                onChange={handleInputChange}
+                className="border p-2 w-full mb-2"
+              />
+              <input
+                type="number"
+                name="rating"
+                max="5"
+                min="1"
+                placeholder="Rating (1-5)"
+                value={newReview.rating}
+                onChange={handleInputChange}
+                className="border p-2 w-full mb-2"
+              />
+              {editingReviewId ? (
+                <button onClick={handleEditReview} className="bg-yellow-500 text-white px-4 py-2 rounded">
+                  Update Review
+                </button>
+              ) : (
+                <button onClick={handleAddReview} className="bg-green-500 text-white px-4 py-2 rounded">
+                  Add Review
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
