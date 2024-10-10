@@ -7,9 +7,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
       <Header />
-      {/* <AuthProvider> */}
         {children}
-        {/* </AuthProvider> */}
       </body>
     </html>
   );
