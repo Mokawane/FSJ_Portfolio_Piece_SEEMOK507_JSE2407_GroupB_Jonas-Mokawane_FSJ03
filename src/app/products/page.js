@@ -1,7 +1,5 @@
 import Products from "@/components/Products";
 import Search from "@/components/Search";
-// import SignUpForm from "@/components/auth/SignUpForm";
-// import SignInForm from "@/components/auth/SignInForm";
 
 export default function Home() {
   return (
@@ -11,8 +9,6 @@ export default function Home() {
       <div className="flex justify-center m-4">
          <Search />
       </div>
-          {/* <SignUpForm />
-          <SignInForm /> */}
          <Products />
       </main>
       <footer>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function Header() {
   const [isNavbarVisible, setIsNavbarVisible] = useState(false);
@@ -19,10 +20,9 @@ export default function Header() {
           </button>
           <button
             onClick={toggleNavbar}
-            data-collapse-toggle="navbar-default"
             type="button"
             className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-white rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"
-            aria-controls="navbar-default"
+            aria-controls="navbar-dropdown"
             aria-expanded={isNavbarVisible}
           >
             <span className="sr-only">Open main menu</span>
@@ -78,7 +78,10 @@ export default function Header() {
                 Cart
               </li>
               <li className="block py-2 px-3 text-white rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0">
-                Login
+                <Link href="/login">Login</Link>
+              </li>
+              <li className="block py-2 px-3 text-white rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0">
+                <Link href="/signUp">Sign Up</Link>
               </li>
             </ul>
           </div>

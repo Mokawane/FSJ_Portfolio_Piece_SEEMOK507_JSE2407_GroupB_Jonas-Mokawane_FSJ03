@@ -21,7 +21,6 @@ const SignUpForm = () => {
 
     return (
         <form onSubmit={handleSignUp}>
-            <h2>Sign Up</h2>
             {error && <p>{error}</p>}
             <input
                 type="email"
