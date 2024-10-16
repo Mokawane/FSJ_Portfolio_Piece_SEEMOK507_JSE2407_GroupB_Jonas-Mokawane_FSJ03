@@ -1,25 +1,33 @@
 import { NextResponse } from 'next/server';
 import { collection, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../../lib/firebase';
+import { getAuth } from 'firebase-admin/auth'; // Ensure you are using the admin SDK for verification
 
 // Function to add a review (POST)
 export async function POST(req) {
+  const auth = getAuth();
+
   try {
     const body = await req.json();
-    const { productId, review } = body;
+    const { productId, review, token } = body;
 
     // Ensure the review meets the required structure
     const { comment, rating, reviewerName, reviewerEmail } = review;
 
-    if (!productId || !comment || rating == null || !reviewerName || !reviewerEmail) {
-      return NextResponse.json({ error: 'Product ID, comment, rating, reviewer name, and reviewer email are required' }, { status: 400 });
+    if (!productId || !comment || rating == null || !reviewerName || !reviewerEmail || !token) {
+      return NextResponse.json({ error: 'Product ID, comment, rating, reviewer name, reviewer email, and token are required' }, { status: 400 });
     }
+
+    // Verify the Firebase ID token
+    const decodedToken = await auth.verifyIdToken(token);
+    const uid = decodedToken.uid;
 
     // Reference the reviews collection for the product
     const reviewsRef = collection(db, `products/${productId}/reviews`);
 
     // Add the new review to Firestore
     const newReview = {
+      uid, // Include uid to associate the review with the user
       comment,
       rating,
       reviewerName,

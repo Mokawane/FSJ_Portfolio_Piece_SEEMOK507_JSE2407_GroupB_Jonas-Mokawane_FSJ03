@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { db } from '../../../../lib/firebase';
-import { doc, addDoc, collection } from 'firebase/firestore';
+import ReviewForm from '@/components/ReviewForm';
 
 const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/400?text=Image+Not+Found';
 
@@ -195,45 +194,7 @@ export default function ProductDetail({ params }) {
             </div>
           )}
 
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold mb-2">Add a Review:</h3>
-            <div>
-              <input
-                type="text"
-                name="name"
-                placeholder="Your Name"
-                value={newReview.name}
-                onChange={handleInputChange}
-                className="border p-2 w-full mb-2"
-              />
-              <textarea
-                name="comment"
-                placeholder="Your Comment"
-                value={newReview.comment}
-                onChange={handleInputChange}
-                className="border p-2 w-full mb-2"
-              />
-              <input
-                type="number"
-                name="rating"
-                max="5"
-                min="1"
-                placeholder="Rating (1-5)"
-                value={newReview.rating}
-                onChange={handleInputChange}
-                className="border p-2 w-full mb-2"
-              />
-              {editingReviewId ? (
-                <button onClick={handleEditReview} className="bg-yellow-500 text-white px-4 py-2 rounded">
-                  Update Review
-                </button>
-              ) : (
-                <button onClick={handleAddReview} className="bg-green-500 text-white px-4 py-2 rounded">
-                  Add Review
-                </button>
-              )}
-            </div>
-          </div>
+        <ReviewForm />
         </div>
       </div>
     </div>
